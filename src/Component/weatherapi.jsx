@@ -1,21 +1,27 @@
 import { useEffect, useState } from "react"
+import { SyncLoader } from 'react-spinners'
 
 const WeatherComp = () => {
 
     const [cityName, setCityName] = useState("")
     const [weatherData, setWeatherData] = useState()
     const [error, setError] = useState()
-    console.log("this is a my city name", cityName);
+    const [loading, setLoading] = useState(false)
 
     async function getweatherData() {
         try {
-            let API_KEY = "c98f996080ffec75ec5892a479e1fe5e"
+            setLoading(true)
+            setWeatherData("")
+
+            let API_KEY = process.env.REACT_APP_API_KEY;
+            console.log(API_KEY);
             let response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${cityName}&appid=${API_KEY}`)
 
             let result = await response.json()
 
             if (result.cod == "404") {
                 setError(result.message)
+                setWeatherData("")
             }
             if (result.cod !== "400" && result.cod !== "404") {
                 setWeatherData(result)
@@ -26,12 +32,13 @@ const WeatherComp = () => {
         } catch (error) {
             console.log("Error message is ", error);
             setError(error.message)
+
+        }
+        finally {
+            setLoading(false)
         }
     }
 
-    function emptyInput() {
-
-    }
 
     useEffect(() => {
         getweatherData()
@@ -55,7 +62,19 @@ const WeatherComp = () => {
                     <label for="name" className="form__label">Enter Your City</label>
 
                 </div>
-                {error && <p>Error: {error}</p>}
+                <span className="loading">
+                    {loading && <SyncLoader
+                        color="#ffff"
+                        cssOverride={{}}
+                        margin={10}
+                        size={5}
+                        speedMultiplier={3}
+                    />}
+                </span>
+                <span className="error">
+                    {error && <p>Error: {error}</p>}
+                </span>
+
                 {weatherData && (
                     <div>
                         <div>
